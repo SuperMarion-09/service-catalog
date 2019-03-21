@@ -1,5 +1,11 @@
 import React from 'react';
 
-const Categories = props => <h1>Categories List</h1>;
+import MasterLayout from '../layout/Master';
+
+const Categories = props =>(
+    <MasterLayout {...props}>
+        <h1>Categories</h1>
+    </MasterLayout>
+);
 
 export default Categories;

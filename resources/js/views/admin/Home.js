@@ -1,5 +1,11 @@
 import React from 'react';
 
-const Home = props => <h1>Home</h1>;
+import MasterLayout from './layout/Master';
+
+const Home = props => (
+    <MasterLayout {...props}>
+        <h1>Bahay</h1>
+    </MasterLayout>
+);
 
 export default Home;
