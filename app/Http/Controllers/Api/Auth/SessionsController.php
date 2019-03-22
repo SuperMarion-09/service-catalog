@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Tymon\JWTauth\Facades\JWTauth;
+use Illuminate\Validation\ValidationException;
 
 class SessionsController extends Controller
 {
@@ -14,6 +15,9 @@ class SessionsController extends Controller
         ]);
 
         if(! $token = auth()->attempt($request->all())){
+            throw ValidationException::withMessages([
+                'email' => [trans('auth.failed')]
+            ]);
             return response()->json(['error'=>'Unauthorized'],401);
         }
 
@@ -23,7 +27,7 @@ class SessionsController extends Controller
     }
 
     public function user(Request $request){
-        return JWTauth::setToken($request->input('auth_token'))->toUser();
+        return JWTauth::setToken($request->input('auth_token'))->toUser()->toArray();
     }
 
     protected function storeAuthToken($token){
