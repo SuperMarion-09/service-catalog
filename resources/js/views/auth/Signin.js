@@ -17,6 +17,9 @@ import {FormHelperText} from '@material-ui/core';
 import axios from 'axios';
 import { async } from 'q';
 
+import {Formik, Form} from 'formik';
+import * as Yup from 'yup';
+
 const styles = theme => ({
     main: {
         width: 'auto',
@@ -56,21 +59,19 @@ class SignIn extends React.Component {
 
     this.state = {
       loading:false,
-      email:'',
-      password:'',
-      errors:{},
+    
 
     };
   }
 
-    handleSinginSubmit = async event => {
-      event.preventDefault();
-      this.setState({loading:true})
-      
+    handleSinginSubmit = async (values, form) => {
+     
+      this.setState({loading:true })
+      form.setSubmitting(false);
       try{
         
         const { pageProps } = this.props;
-        const{ email, password } = this.state;
+        const{ email, password } = values;
           const response = await axios ('/api/auth/signin',{
             method:'POST',
             params:{
@@ -83,18 +84,84 @@ class SignIn extends React.Component {
           this.setState({loading:false})
       }catch(error){
         const {data} = error.response;
-        this.setState({
-          loading:false,
-          errors: data.errors,
-          
-        });
+       form.setErrors(data.errors);
       }
    
      
     };
     render(){
         const { classes } = this.props;
-        const { errors,loading } = this.state;
+      
+        const renderForm = (
+        
+          <Formik 
+              initialValues={{
+                email:'',
+                password:'',
+              }}
+              validationSchema = {Yup.object().shape({
+                  email: Yup.string()
+                    .required('This Field is Required')
+                    .email('This is not type of email'),
+                  password: Yup.string().required('This Field is Required'),
+              })}
+              onSubmit={async (values,form)=>{
+                await this.handleSinginSubmit(values, form);
+              }}
+          >
+          {({
+            values,
+            handleChange,
+            setFieldvalue,
+            errors,
+            isSubmitting,
+           
+          }) => (
+              <Form className={classes.form}  noValidate  >
+              <FormControl margin="normal" required fullWidth error={errors.hasOwnProperty('email')}>
+                  <InputLabel htmlFor="email">Email Address</InputLabel>
+                  <Input 
+                    id="email" 
+                    name="email" 
+                    autoComplete="email" 
+                    value={values.email}
+                    onChange={handleChange}
+                    autoFocus 
+                  
+                  />
+                  {errors.hasOwnProperty('email') && (<FormHelperText>{errors.email}</FormHelperText>)}
+              </FormControl>
+              <FormControl margin="normal" required fullWidth error={errors.hasOwnProperty('password')}>
+                  <InputLabel htmlFor="password">Password</InputLabel>
+                  <Input 
+                    name="password" 
+                    type="password" 
+                    id="password" 
+                    autoComplete="current-password" 
+                    value={values.password}
+                    onChange={handleChange}
+                  />
+                  {errors.hasOwnProperty('password') && (<FormHelperText>{errors.password}</FormHelperText>)}
+              </FormControl>
+              <FormControlLabel
+                  control={<Checkbox value="remember" color="primary" />}
+                  label="Remember me"
+              />
+              <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  className={classes.submit}
+                  disabled={isSubmitting || Object.keys(errors).length > 0}
+              >
+              Sign in
+              </Button>
+          </Form>
+            )}
+          </Formik>
+        
+      );
         return (
             <main className={classes.main}>
                 <CssBaseline />
@@ -105,69 +172,7 @@ class SignIn extends React.Component {
                     <Typography component="h1" variant="h5">
                      Sign in
                     </Typography>
-                    <form className={classes.form} onSubmit={this.handleSinginSubmit} noValidate  >
-                        <FormControl margin="normal" required fullWidth error={errors.hasOwnProperty('email')}>
-                            <InputLabel htmlFor="email">Email Address</InputLabel>
-                            <Input 
-                              id="email" 
-                              name="email" 
-                              autoComplete="email" 
-                              value={this.state.email}
-                              onChange={ event => {
-                                  event.persist();
-                                
-                                  this.setState( prevState => { 
-                                    let error ={...prevState.errors};
-                                    delete errors.email;
-                                    return {
-                                      email:event.target.value,
-                                      error,
-                                    }
-                                  });
-                                }}
-                              autoFocus 
-                            
-                            />
-                            {errors.hasOwnProperty('email') && (<FormHelperText>{errors.email[0]}</FormHelperText>)}
-                        </FormControl>
-                        <FormControl margin="normal" required fullWidth error={errors.hasOwnProperty('password')}>
-                            <InputLabel htmlFor="password">Password</InputLabel>
-                            <Input 
-                              name="password" 
-                              type="password" 
-                              id="password" 
-                              autoComplete="current-password" 
-                              value={this.state.password}
-                              onChange={ event => {
-                                event.persist();
-                                
-                                this.setState( prevState => { 
-                                  let error ={...prevState.errors};
-                                delete errors.password;
-                                  return {
-                                    password:event.target.value,
-                                    error,
-                                  }
-                                });
-                              }}
-                            />
-                            {errors.hasOwnProperty('password') && (<FormHelperText>{errors.password[0]}</FormHelperText>)}
-                        </FormControl>
-                        <FormControlLabel
-                            control={<Checkbox value="remember" color="primary" />}
-                            label="Remember me"
-                        />
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            color="primary"
-                            className={classes.submit}
-                            disabled={loading}
-                        >
-            Sign in
-                        </Button>
-                    </form>
+                   {renderForm}
                 </Paper>
             </main>
         );
