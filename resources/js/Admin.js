@@ -1,77 +1,122 @@
 import React from 'react';
 
-import { HashRouter as Router, Route, Link, Switch, Redirect} from 'react-router-dom';
+import {
+    HashRouter as Router,
+    Route,
+    Link,
+    Switch,
+    Redirect,
+} from 'react-router-dom';
 
 import { routes } from './routes';
 
 import axios from 'axios';
 
-
-class Admin extends React.Component{ 
-    constructor(props){
+class Admin extends React.Component {
+    constructor(props) {
         super(props);
 
         this.state = {
-            authenticated:false,
+            authenticated: false,
             user: {},
-            token:{},
+            token: {},
+            loading: false,
         };
     }
     fetchAuthUser = async token => {
-        try{
-            const response = await axios ('/api/auth/user',{
+        this.setState({ loading: true });
+        try {
+            const response = await axios('/api/auth/user', {
                 method: 'GET',
-                params:{ token: token.auth_token },
-            })
-
-            this.setState({user:response.data});
-        }catch(error){}
-       
+                params: { auth_token: token.auth_token },
+            });
+            if (!this.state.user) {
+                return;
+            }
+            this.storeAuthToken(JSON.stringify(token));
+            this.setState({
+                authenticated: true,
+                token,
+                loading: false,
+                user: response.data,
+            });
+        } catch (error) {
+            this.setState({ loading: false, authenticated: false });
+        }
     };
-    authenticateUser = async token => {
-        if(!token){
+
+    signOutUser = async () => {
+        if (!this.state.authenticated) {
             return;
         }
-        await this.fetchAuthUser(token);
-        this.setState({
-            authenticated:true,
-            token,
-        });
-           
+        try {
+            await axios.post('/api/auth/signOutUser');
+
+            this.setState({
+                authenticated: false,
+            });
+            window.localStorage.removeItem('token');
+        } catch (error) {}
     };
 
-    render(){
-        const { authenticated } = this.state;
-        return(
+    storeAuthToken = tokenString => {
+        window.localStorage.setItem('token', tokenString);
+    };
+    /**
+     * @param{object}
+     */
+    authenticateUser = async token => {
+        if (!token) {
+            return;
+        }
+        axios.defaults.headers.common['Authorization'] = `Bearer ${
+            token.auth_token
+        }`;
+
+        await this.fetchAuthUser(token);
+    };
+
+    async componentDidMount() {
+        const token = JSON.parse(window.localStorage.getItem('token'));
+
+        await this.authenticateUser(token);
+    }
+
+    render() {
+        const { authenticated, loading } = this.state;
+
+        if (loading) {
+            return 'loading...';
+        }
+        return (
             <Router>
-       
                 <Switch>
-                    {routes.map((route,key)=>(
-                        <Route 
-                           
+                    {routes.map((route, key) => (
+                        <Route
                             key={key}
                             exact
                             path={route.path}
-                           // component={route.component} 
+                            // component={route.component}
                             render={componentProps => {
-                                if(route.auth){
-                                    if(!authenticated){
-                                        return <Redirect to='/signin' />
+                                if (route.auth) {
+                                    if (!authenticated) {
+                                        return <Redirect to="/signin" />;
                                     }
                                 }
-                                if(!route.auth){
-                                    if(authenticated){
-                                        return <Redirect to='/home' />
+                                if (!route.auth) {
+                                    if (authenticated) {
+                                        return <Redirect to="/home" />;
                                     }
                                 }
-
 
                                 const View = route.component;
                                 return (
-                                    <View  
+                                    <View
                                         {...componentProps}
                                         pageProps={{
-                                            authenticateUser: this.authenticateUser,
+                                            signOutUser: this.signOutUser,
+                                            authenticateUser: this
+                                                .authenticateUser,
                                         }}
                                     />
                                 );
@@ -79,7 +124,6 @@ class Admin extends React.Component{
                         />
                     ))}
                 </Switch>
-
             </Router>
         );
     }

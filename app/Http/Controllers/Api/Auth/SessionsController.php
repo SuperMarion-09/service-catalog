@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Tymon\JWTauth\Facades\JWTauth;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Validation\ValidationException;
 
 class SessionsController extends Controller
@@ -27,7 +27,7 @@ class SessionsController extends Controller
     }
 
     public function user(Request $request){
-        return JWTauth::setToken($request->input('auth_token'))->toUser()->toArray();
+        return JWTAuth::setToken($request->input('auth_token'))->toUser()->toArray();
     }
 
     protected function storeAuthToken($token){
@@ -56,5 +56,18 @@ class SessionsController extends Controller
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60
         ]);
+    }
+    public function signOutUser(){
+
+        $user = auth()->guard('api')->user();
+
+        $user->auth_token = null;
+
+        $user->update();
+
+        auth()->guard('api')->logout();
+
+        return response()->json(['message' => 'Successfully signed out']);
+
     }
 }

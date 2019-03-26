@@ -13,11 +13,11 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import withStyles from '@material-ui/core/styles/withStyles';
 
-import {FormHelperText} from '@material-ui/core';
+import { FormHelperText } from '@material-ui/core';
 import axios from 'axios';
 import { async } from 'q';
 
-import {Formik, Form} from 'formik';
+import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 
 const styles = theme => ({
@@ -37,7 +37,8 @@ const styles = theme => ({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 3}px ${theme.spacing.unit * 3}px`,
+        padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit *
+            3}px ${theme.spacing.unit * 3}px`,
     },
     avatar: {
         margin: theme.spacing.unit,
@@ -53,115 +54,126 @@ const styles = theme => ({
 });
 
 class SignIn extends React.Component {
+    constructor(props) {
+        super(props);
 
-  constructor(props){
-    super(props);
-
-    this.state = {
-      loading:false,
-    
-
-    };
-  }
+        this.state = {
+            loading: false,
+        };
+    }
 
     handleSinginSubmit = async (values, form) => {
-     
-      this.setState({loading:true })
-      form.setSubmitting(false);
-      try{
-        
-        const { pageProps } = this.props;
-        const{ email, password } = values;
-          const response = await axios ('/api/auth/signin',{
-            method:'POST',
-            params:{
-              email,
-              password
-            }
-          });
+        this.setState({ loading: true });
+        form.setSubmitting(false);
+        try {
+            const { pageProps } = this.props;
+            const { email, password } = values;
+            const response = await axios('/api/auth/signin', {
+                method: 'POST',
+                params: {
+                    email,
+                    password,
+                },
+            });
 
-          pageProps.authenticateUser(response.data);
-          this.setState({loading:false})
-      }catch(error){
-        const {data} = error.response;
-       form.setErrors(data.errors);
-      }
-   
-     
+            pageProps.authenticateUser(response.data);
+            this.setState({ loading: false });
+        } catch (error) {
+            const { data } = error.response;
+            form.setErrors(data.errors);
+        }
     };
-    render(){
+    render() {
         const { classes } = this.props;
-      
+
         const renderForm = (
-        
-          <Formik 
-              initialValues={{
-                email:'',
-                password:'',
-              }}
-              validationSchema = {Yup.object().shape({
-                  email: Yup.string()
-                    .required('This Field is Required')
-                    .email('This is not type of email'),
-                  password: Yup.string().required('This Field is Required'),
-              })}
-              onSubmit={async (values,form)=>{
-                await this.handleSinginSubmit(values, form);
-              }}
-          >
-          {({
-            values,
-            handleChange,
-            setFieldvalue,
-            errors,
-            isSubmitting,
-           
-          }) => (
-              <Form className={classes.form}  noValidate  >
-              <FormControl margin="normal" required fullWidth error={errors.hasOwnProperty('email')}>
-                  <InputLabel htmlFor="email">Email Address</InputLabel>
-                  <Input 
-                    id="email" 
-                    name="email" 
-                    autoComplete="email" 
-                    value={values.email}
-                    onChange={handleChange}
-                    autoFocus 
-                  
-                  />
-                  {errors.hasOwnProperty('email') && (<FormHelperText>{errors.email}</FormHelperText>)}
-              </FormControl>
-              <FormControl margin="normal" required fullWidth error={errors.hasOwnProperty('password')}>
-                  <InputLabel htmlFor="password">Password</InputLabel>
-                  <Input 
-                    name="password" 
-                    type="password" 
-                    id="password" 
-                    autoComplete="current-password" 
-                    value={values.password}
-                    onChange={handleChange}
-                  />
-                  {errors.hasOwnProperty('password') && (<FormHelperText>{errors.password}</FormHelperText>)}
-              </FormControl>
-              <FormControlLabel
-                  control={<Checkbox value="remember" color="primary" />}
-                  label="Remember me"
-              />
-              <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  className={classes.submit}
-                  disabled={isSubmitting || Object.keys(errors).length > 0}
-              >
-              Sign in
-              </Button>
-          </Form>
-            )}
-          </Formik>
-        
-      );
+            <Formik
+                initialValues={{
+                    email: '',
+                    password: '',
+                }}
+                validationSchema={Yup.object().shape({
+                    email: Yup.string()
+                        .required('This Field is Required')
+                        .email('This is not type of email'),
+                    password: Yup.string().required('This Field is Required'),
+                })}
+                onSubmit={async (values, form) => {
+                    await this.handleSinginSubmit(values, form);
+                }}
+            >
+                {({
+                    values,
+                    handleChange,
+                    setFieldvalue,
+                    errors,
+                    isSubmitting,
+                }) => (
+                    <Form className={classes.form} noValidate>
+                        <FormControl
+                            margin="normal"
+                            required
+                            fullWidth
+                            error={errors.hasOwnProperty('email')}
+                        >
+                            <InputLabel htmlFor="email">
+                                Email Address
+                            </InputLabel>
+                            <Input
+                                id="email"
+                                name="email"
+                                autoComplete="email"
+                                value={values.email}
+                                onChange={handleChange}
+                                autoFocus
+                            />
+                            {errors.hasOwnProperty('email') && (
+                                <FormHelperText>{errors.email}</FormHelperText>
+                            )}
+                        </FormControl>
+                        <FormControl
+                            margin="normal"
+                            required
+                            fullWidth
+                            error={errors.hasOwnProperty('password')}
+                        >
+                            <InputLabel htmlFor="password">Password</InputLabel>
+                            <Input
+                                name="password"
+                                type="password"
+                                id="password"
+                                autoComplete="current-password"
+                                value={values.password}
+                                onChange={handleChange}
+                            />
+                            {errors.hasOwnProperty('password') && (
+                                <FormHelperText>
+                                    {errors.password}
+                                </FormHelperText>
+                            )}
+                        </FormControl>
+                        <FormControlLabel
+                            control={
+                                <Checkbox value="remember" color="primary" />
+                            }
+                            label="Remember me"
+                        />
+                        <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            color="primary"
+                            className={classes.submit}
+                            disabled={
+                                isSubmitting || Object.keys(errors).length > 0
+                            }
+                        >
+                            Sign in
+                        </Button>
+                    </Form>
+                )}
+            </Formik>
+        );
         return (
             <main className={classes.main}>
                 <CssBaseline />
@@ -170,9 +182,9 @@ class SignIn extends React.Component {
                         <LockOutlinedIcon />
                     </Avatar>
                     <Typography component="h1" variant="h5">
-                     Sign in
+                        Sign in
                     </Typography>
-                   {renderForm}
+                    {renderForm}
                 </Paper>
             </main>
         );

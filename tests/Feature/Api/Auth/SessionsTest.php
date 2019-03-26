@@ -29,9 +29,23 @@ class SessionsTest extends TestCase
     {
         $user=_test_user();
         
-        $this->get(route(api.auth.user),[
+        $this->get(route('api.auth.user',[
             'auth_token' => _test_user()->auth_token
-        ])
+        ]))
         ->assertStatus(200)->assertJson($user->toArray());
+    }
+    public function a_user_can_be_logout()
+    {
+        $user=_test_user();
+        
+        $this->get(route('api.auth.sigOutUser',[
+            'auth_token' => $user->auth_token
+        ]))
+        ->assertStatus(200);
+
+        $this->assertDatabaseHas('users',[
+            'email' => $user->email,
+            'auth_token' => null
+        ]);
     }
 }
