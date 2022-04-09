@@ -18,7 +18,7 @@
         "formik": "^1.5.1",
         "lang.js": "^1.1.14",
         "material-ui-pickers": "^2.2.4",
-        "moment": "^2.24.0",
+        "moment": "^2.29.2",
         "prop-types": "^15.6.2",
         "react": "^16.8.1",
         "react-dom": "^16.8.1",
